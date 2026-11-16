@@ -9,3 +9,12 @@ export async function download(id,format){
  if(!r.ok)throw new Error('下载失败，请重试');
  const u=URL.createObjectURL(await r.blob()),a=document.createElement('a');a.href=u;a.download='分析归档-'+id+'.'+format;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);
 }
+export async function downloadSeal(packNo){
+ const r=await fetch('/api/audit-seals/'+packNo+'/download',{headers:{Authorization:'Bearer '+session.token}});
+ if(!r.ok){
+  const body=await r.json().catch(()=>({}));
+  throw new Error(typeof body.detail==='string'?body.detail:'封存包暂不可下载');
+ }
+ const name=(r.headers.get('Content-Disposition')||'').match(/filename="?([^";]+)/)?.[1]||('audit-seal-'+String(packNo).padStart(6,'0')+'.json');
+ const u=URL.createObjectURL(await r.blob()),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);
+}
